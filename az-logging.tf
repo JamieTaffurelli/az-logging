@@ -9,11 +9,6 @@ terraform {
   required_version = "~> 1.1.5"
 }
 
-resource "azurerm_resource_group" "logs" {
-  name     = var.resource_group_name
-  location = var.location
-}
-
 locals {
   solutions = ["AgentHealthAssessment", "AlertManagement", "Security", "AzureActivity", "ChangeTracking", "Security", "ServiceMap", "SQLAdvancedThreatProtection", "SQLVulnerabilityAssessment", "Updates", "VMInsights"]
 }
