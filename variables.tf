@@ -1,6 +1,6 @@
 variable "resource_group_name" {
   type        = string
-  description = "Name of the Resource Group to create"
+  description = "Name of the Resource Group to deploy to"
 }
 
 variable "location" {
@@ -18,29 +18,14 @@ variable "automation_account_name" {
   description = "Name of the automation account to link to workspace"
 }
 
-variable "storage_account_name" {
-  type        = string
-  description = "Name of the Storage Account to deploy"
-}
-
-variable "subnet_name" {
-  type        = string
-  description = "Name of the subnet to allow storage access to"
-}
-
-variable "virtual_network_name" {
-  type        = string
-  description = "Name of the Virtual Network with subnet to allow storage access to"
-}
-
-variable "virtual_network_resource_group_name" {
-  type        = string
-  description = "Resource Group of the Virtual Network with subnet to allow storage access to"
-}
-
-variable "network_watcher_name" {
-  type        = string
-  description = "Name of the Network Watcher to deploy"
+variable "network_watchers" {
+  type = map(object(
+    {
+      name     = string
+      location = string
+    }
+  ))
+  description = "Name and loaction of the Network Watchers to deploy"
 }
 
 variable "data_collection_rule_template_path" {
