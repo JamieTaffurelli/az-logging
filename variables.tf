@@ -18,6 +18,11 @@ variable "automation_account_name" {
   description = "Name of the automation account to link to workspace"
 }
 
+variable "storage_account_name" {
+  type        = string
+  description = "Name of the Storage Account to deploy"
+}
+
 variable "network_watchers" {
   type = map(object(
     {

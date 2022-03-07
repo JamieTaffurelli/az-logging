@@ -113,6 +113,102 @@ resource "azurerm_monitor_diagnostic_setting" "automation_account_diagnostics" {
   }
 }
 
+resource "azurerm_storage_account" "logging" {
+  name                      = var.storage_account_name
+  location                  = azurerm_resource_group.logs.location
+  resource_group_name       = azurerm_resource_group.logs.name
+  account_kind              = "StorageV2"
+  account_tier              = "Standard"
+  account_replication_type  = "LRS"
+  access_tier               = "Hot"
+  enable_https_traffic_only = true
+  min_tls_version           = "TLS1_2"
+  allow_blob_public_access  = false
+  shared_access_key_enabled = true
+
+  blob_properties {
+
+    delete_retention_policy {
+      days = 30
+    }
+
+    container_delete_retention_policy {
+      days = 30
+    }
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+  tags = var.tags
+}
+
+resource "azurerm_monitor_diagnostic_setting" "storage_account_diagnostics" {
+  name                       = "security-logging"
+  target_resource_id         = azurerm_storage_account.logging.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.logging.id
+
+  metric {
+    category = "Transaction"
+
+    retention_policy {
+      enabled = true
+      days    = 365
+    }
+  }
+}
+
+locals {
+  storageDiagnostics = ["blobServices", "fileServices", "tableServices", "queueServices"]
+}
+
+resource "azurerm_monitor_diagnostic_setting" "storage_account_child_diagnostics" {
+  for_each                   = toset(local.storageDiagnostics)
+  name                       = "security-logging"
+  target_resource_id         = "${azurerm_storage_account.logging.id}/${each.value}/default/"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.logging.id
+
+  log {
+    category = "StorageRead"
+    enabled  = true
+
+    retention_policy {
+      enabled = true
+      days    = 365
+    }
+  }
+
+  log {
+    category = "StorageWrite"
+    enabled  = true
+
+    retention_policy {
+      enabled = true
+      days    = 365
+    }
+  }
+
+  log {
+    category = "StorageDelete"
+    enabled  = true
+
+    retention_policy {
+      enabled = true
+      days    = 365
+    }
+  }
+
+  metric {
+    category = "Transaction"
+    enabled  = true
+
+    retention_policy {
+      enabled = true
+      days    = 365
+    }
+  }
+}
+
 resource "azurerm_log_analytics_linked_service" "logging" {
   resource_group_name = var.resource_group_name
   workspace_id        = azurerm_log_analytics_workspace.logging.id
