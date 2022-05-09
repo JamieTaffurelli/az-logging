@@ -445,7 +445,7 @@ resource "azurerm_log_analytics_datasource_windows_performance_counter" "perf" {
 resource "azurerm_resource_group_template_deployment" "vmguesthealth" {
   name                = "vm-guest-health"
   resource_group_name = var.resource_group_name
-  template_content    = file("arm\\vmInsightsDataCollectionRule.json")
+  template_content    = file("arm/vmInsightsDataCollectionRule.json")
   parameters_content = jsonencode({
     "location" = {
       value = var.location
