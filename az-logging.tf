@@ -114,17 +114,17 @@ resource "azurerm_monitor_diagnostic_setting" "automation_account_diagnostics" {
 }
 
 resource "azurerm_storage_account" "logging" {
-  name                      = var.storage_account_name
-  location                  = azurerm_resource_group.logs.location
-  resource_group_name       = azurerm_resource_group.logs.name
-  account_kind              = "StorageV2"
-  account_tier              = "Standard"
-  account_replication_type  = "LRS"
-  access_tier               = "Hot"
-  enable_https_traffic_only = true
-  min_tls_version           = "TLS1_2"
-  allow_blob_public_access  = false
-  shared_access_key_enabled = true
+  name                            = var.storage_account_name
+  location                        = var.location
+  resource_group_name             = var.resource_group_name
+  account_kind                    = "StorageV2"
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  access_tier                     = "Hot"
+  enable_https_traffic_only       = true
+  min_tls_version                 = "TLS1_2"
+  allow_nested_items_to_be_public = false
+  shared_access_key_enabled       = true
 
   blob_properties {
 
@@ -134,6 +134,16 @@ resource "azurerm_storage_account" "logging" {
 
     container_delete_retention_policy {
       days = 30
+    }
+  }
+
+  queue_properties {
+    logging {
+      delete                = true
+      read                  = true
+      write                 = true
+      version               = "1.0"
+      retention_policy_days = 365
     }
   }
 
@@ -253,7 +263,7 @@ resource "azurerm_log_analytics_datasource_windows_event" "events" {
   resource_group_name = var.resource_group_name
   workspace_name      = azurerm_log_analytics_workspace.logging.name
   event_log_name      = each.value["event_log_name"]
-  event_types         = ["error", "warning", "information"]
+  event_types         = ["Error", "Warning", "Information"]
 }
 
 locals {
@@ -445,7 +455,7 @@ resource "azurerm_log_analytics_datasource_windows_performance_counter" "perf" {
 resource "azurerm_resource_group_template_deployment" "vmguesthealth" {
   name                = "vm-guest-health"
   resource_group_name = var.resource_group_name
-  template_content    = file("az-logging\\arm\\vmInsightsDataCollectionRule.json")
+  template_content    = file("arm/vmInsightsDataCollectionRule.json")
   parameters_content = jsonencode({
     "location" = {
       value = var.location
